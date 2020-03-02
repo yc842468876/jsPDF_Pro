@@ -62,6 +62,12 @@ jsPDF.API.addFooter = async function (x, width, footer) {
   this.addImage(data, 'JPEG', x, A4_HEIGHT - height, width, height);
 };
 
+jsPDF.API.addPageNum = async function (num) {
+  if (!num) return;
+  this.setFontSize(8);
+  this.text(290, 830, `- ${num} -`);
+};
+
 /**
  * 生成pdf(处理多页pdf截断问题)
  * @param {Object} param
@@ -81,6 +87,7 @@ jsPDF.API.addFooter = async function (x, width, footer) {
  * @param {string} [param.mode='adaptive'] - 生成pdf的模式，支持'adaptive'、'fixed'，'adaptive'需给dom添加标识，'fixed'需固定布局。
  * @param {string} [param.itemName='item'] - 给dom添加元素标识的名字，'adaptive'模式需在dom中设置
  * @param {string} [param.groupName='group'] - 给dom添加组标识的名字，'adaptive'模式需在dom中设置
+ * @param {string} [param.addPageNum=false] - 给dom添加页码，默认 false
  * @returns {Promise} 根据outputType返回不同的数据类型
  */
 async function outputPdf ({
@@ -89,6 +96,7 @@ async function outputPdf ({
   header, footer, headerOnlyFirst = true, footerOnlyLast = true,
   headerFromContent = true, footerFromContent = true,
   mode = 'adaptive', itemName = 'item', groupName = 'group',
+  addPageNum = false,
 }) {
   if (!(element instanceof HTMLElement)) {
     throw new Error('The root element must be HTMLElement.');
@@ -127,6 +135,7 @@ async function outputPdf ({
   const params = {
     element, contentWidth, contentHeight, itemName, groupName,
     pdf, baseX, baseY, width, height, addImage, addHeader, addFooter,
+    addPageNum,
   };
   switch (mode) {
     case 'adaptive':
@@ -140,7 +149,7 @@ async function outputPdf ({
 }
 
 async function outputWithFixedSize ({
-  pdf, baseX, baseY, height, addImage, addHeader, addFooter, contentHeight,
+  pdf, baseX, baseY, height, addImage, addHeader, addFooter, contentHeight, addPageNum
 }) {
   const pageNum = Math.ceil(height / contentHeight); // 总页数
   const arr = Array.from({ length: pageNum }).map((_, i) => i);
@@ -158,6 +167,12 @@ async function outputWithFixedSize ({
     }
     await addHeader(isFirst);
     await addFooter(isLast);
+
+    // 添加页码
+    if (addPageNum) {
+      pdf.addPageNum(i + 1);
+    }
+
     if (!isLast) {
       pdf.addPage();
     }
@@ -167,6 +182,7 @@ async function outputWithFixedSize ({
 async function outputWithAdaptive ({
   element, contentWidth, itemName, groupName,
   pdf, baseX, baseY, addImage, addHeader, addFooter, contentHeight,
+  addPageNum,
 }) {
   // 从根节点遍历dom，计算出每页应放置的内容高度以保证不被截断
   const splitElement = () => {
@@ -217,6 +233,12 @@ async function outputWithAdaptive ({
     }
     await addHeader(isFirst);
     await addFooter(isLast);
+    
+    // 添加页码
+    if (addPageNum) {
+      pdf.addPageNum(currentPage + 1);
+    }
+
     if (!isLast) {
       pdf.addPage();
     }

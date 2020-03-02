@@ -14,7 +14,7 @@ function App() {
       // x,
       // y,
       header: document.getElementById("header"),
-      footer: document.getElementById("header"),
+      // footer: document.getElementById("header"),
       headerOnlyFirst: false,
       footerOnlyLast: false,
       headerFromContent: false, 
@@ -22,6 +22,7 @@ function App() {
       // mode:'fixed',
       // itemName:'data-item',
       // groupName: 'group',
+      addPageNum: true,
     });
   }
   return (
